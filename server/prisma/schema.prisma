@@ -1,0 +1,242 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  username      String       @unique
+  password      String
+  fullName      String
+  avatar        String?
+  bio           String?
+  xp            Int          @default(0)
+  level         Int          @default(1)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
+  // Relations
+  enrollments   Enrollment[]
+  progress      Progress[]
+  challenges    ChallengeAttempt[]
+  roadmaps      Roadmap[]
+  achievements  UserAchievement[]
+  comments      Comment[]
+  
+  @@map("users")
+}
+
+model Course {
+  id          String       @id @default(uuid())
+  title       String
+  description String
+  language    String       // "html", "javascript", "python", etc.
+  difficulty  String       // "beginner", "intermediate", "advanced"
+  thumbnail   String?
+  xpReward    Int          @default(100)
+  order       Int
+  isPublished Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  // Relations
+  lessons     Lesson[]
+  enrollments Enrollment[]
+  
+  @@map("courses")
+}
+
+model Lesson {
+  id          String     @id @default(uuid())
+  courseId    String
+  title       String
+  description String
+  content     String     @db.Text
+  code        String?    @db.Text
+  solution    String?    @db.Text
+  hints       String[]
+  xpReward    Int        @default(50)
+  order       Int
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  // Relations
+  course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress    Progress[]
+  quizzes     Quiz[]
+  
+  @@map("lessons")
+}
+
+model Enrollment {
+  id          String    @id @default(uuid())
+  userId      String
+  courseId    String
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+model Progress {
+  id          String    @id @default(uuid())
+  userId      String
+  lessonId    String
+  completed   Boolean   @default(false)
+  code        String?   @db.Text
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, lessonId])
+  @@map("progress")
+}
+
+model Quiz {
+  id          String   @id @default(uuid())
+  lessonId    String
+  question    String
+  options     String[]
+  correctAnswer Int
+  explanation String?
+  xpReward    Int      @default(10)
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  @@map("quizzes")
+}
+
+model Challenge {
+  id          String             @id @default(uuid())
+  title       String
+  description String
+  difficulty  String
+  language    String
+  testCases   Json
+  xpReward    Int                @default(200)
+  timeLimit   Int?               // en secondes
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  
+  // Relations
+  attempts    ChallengeAttempt[]
+  
+  @@map("challenges")
+}
+
+model ChallengeAttempt {
+  id          String    @id @default(uuid())
+  userId      String
+  challengeId String
+  code        String    @db.Text
+  passed      Boolean   @default(false)
+  score       Int       @default(0)
+  timeSpent   Int?      // en secondes
+  createdAt   DateTime  @default(now())
+  
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  
+  @@map("challenge_attempts")
+}
+
+model Roadmap {
+  id          String         @id @default(uuid())
+  userId      String
+  title       String
+  description String?
+  category    String         // "frontend", "backend", "fullstack", etc.
+  isPublic    Boolean        @default(false)
+  likes       Int            @default(0)
+  views       Int            @default(0)
+  data        Json           // Structure du roadmap (nodes, edges)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  
+  // Relations
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  steps       RoadmapStep[]
+  comments    Comment[]
+  
+  @@map("roadmaps")
+}
+
+model RoadmapStep {
+  id          String    @id @default(uuid())
+  roadmapId   String
+  title       String
+  description String?
+  order       Int
+  completed   Boolean   @default(false)
+  resources   Json?     // Array de liens, vidéos, etc.
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  roadmap     Roadmap   @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  
+  @@map("roadmap_steps")
+}
+
+model Achievement {
+  id          String            @id @default(uuid())
+  title       String
+  description String
+  icon        String
+  xpRequired  Int
+  category    String
+  createdAt   DateTime          @default(now())
+  
+  // Relations
+  users       UserAchievement[]
+  
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime    @default(now())
+  
+  // Relations
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model Comment {
+  id          String   @id @default(uuid())
+  userId      String
+  roadmapId   String
+  content     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roadmap     Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  
+  @@map("comments")
+}

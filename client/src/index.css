@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+     @apply border border-gray-700;
+  }
+  
+  body {
+    @apply bg-dark-900 text-white font-sans antialiased;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Scrollbar personnalisée */
+  .custom-scrollbar::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-dark-800;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-dark-600 rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-dark-500;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-400 via-secondary-400 to-primary-500;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-white/5 backdrop-blur-lg border border-white/10;
+  }
+
+  /* Card hover effect */
+  .card-hover {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary-500/20;
+  }
+
+  /* Button animations */
+  .btn-glow {
+    @apply relative overflow-hidden;
+  }
+
+  .btn-glow::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 -translate-x-full transition-all duration-500;
+  }
+
+  .btn-glow:hover::before {
+    @apply opacity-30 translate-x-full;
+  }
+}
+
+@layer utilities {
+  /* Custom animations */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  @keyframes pulse-slow {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 3s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+  }
+}
+
+/* Monaco Editor custom theme */
+.monaco-editor {
+  @apply rounded-lg overflow-hidden;
+}
+
+/* React Flow custom styles */
+.react-flow {
+  @apply bg-dark-900;
+}
+
+.react-flow__node {
+  @apply bg-dark-800 border-2 border-primary-500 rounded-lg shadow-lg;
+}
+
+.react-flow__edge-path {
+  @apply stroke-primary-500;
+}
+
+/* Code blocks */
+pre {
+  @apply bg-dark-800 rounded-lg p-4 overflow-x-auto my-4;
+}
+
+code {
+  @apply font-mono text-sm text-primary-400;
+}
+
+/* Selection */
+::selection {
+  @apply bg-primary-500/30 text-white;
+}
+
+/* Focus visible */
+*:focus-visible {
+  @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-dark-900;
+}
