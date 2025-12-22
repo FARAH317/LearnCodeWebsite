@@ -7,10 +7,12 @@ import Login from './pages/other/Login';
 import Register from './pages/other/Register';
 import Dashboard from './pages/other/Dashboard';
 import Courses from './pages/learncode/Courses';
-
 import CourseDetail from './pages/learncode/CourseDetail';
 import Lesson from './pages/learncode/Lesson';
 import Profile from './pages/learncode/Profile';
+import Challenges from './pages/learncode/Challenges';
+import ChallengeDetail from './pages/learncode/ChallengeDetail';
+import Leaderboard from './pages/learncode/Leaderboard';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -73,7 +75,30 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
+        <Route
+          path="/challenges"
+          element={
+            <ProtectedRoute>
+              <Challenges />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/challenges/:id"
+          element={
+            <ProtectedRoute>
+              <ChallengeDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/challenges/leaderboard"
+          element={
+            <ProtectedRoute>
+              <Leaderboard />
+            </ProtectedRoute>
+          }
+        />
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

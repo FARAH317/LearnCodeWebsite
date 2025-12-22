@@ -1,9 +1,7 @@
-// src/services/authService.ts
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import prisma from '../config/database';
- // ton PrismaClient
-import { User } from "@prisma/client";
+import { hashPassword, comparePassword } from '../utils/encryption';
+import { generateToken } from '../utils/jwt';
+import { AppError } from '../middleware/errorHandler';
 
 interface RegisterData {
   email: string;
@@ -17,41 +15,164 @@ interface LoginData {
   password: string;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET!;
-
 export class AuthService {
   // Inscription
-  async register(data: RegisterData): Promise<{ user: User; token: string }> {
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-    const user = await prisma.user.create({
-      data: { ...data, password: hashedPassword },
+  async register(data: RegisterData) {
+    const { email, username, password, fullName } = data;
+
+    // Vérifier si l'utilisateur existe déjà
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { username }],
+      },
     });
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1h" });
-    return { user, token };
+    if (existingUser) {
+      if (existingUser.email === email) {
+        throw new AppError('Email already in use', 409);
+      }
+      if (existingUser.username === username) {
+        throw new AppError('Username already taken', 409);
+      }
+    }
+
+    // Hasher le mot de passe
+    const hashedPassword = await hashPassword(password);
+
+    // Créer l'utilisateur
+    const user = await prisma.user.create({
+      data: {
+        email,
+        username,
+        password: hashedPassword,
+        fullName,
+      },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        fullName: true,
+        avatar: true,
+        xp: true,
+        level: true,
+        createdAt: true,
+      },
+    });
+
+    // Générer le token JWT
+    const token = generateToken({
+      userId: user.id,
+      email: user.email,
+      username: user.username,
+    });
+
+    return {
+      user,
+      token,
+    };
   }
 
   // Connexion
-  async login(data: LoginData): Promise<{ user: User; token: string }> {
-    const user = await prisma.user.findUnique({ where: { email: data.email } });
-    if (!user) throw new Error("Invalid credentials");
+  async login(data: LoginData) {
+    const { email, password } = data;
 
-    const isValid = await bcrypt.compare(data.password, user.password);
-    if (!isValid) throw new Error("Invalid credentials");
+    // Trouver l'utilisateur
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1h" });
-    return { user, token };
+    if (!user) {
+      throw new AppError('Invalid email or password', 401);
+    }
+
+    // Vérifier le mot de passe
+    const isPasswordValid = await comparePassword(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new AppError('Invalid email or password', 401);
+    }
+
+    // Générer le token JWT
+    const token = generateToken({
+      userId: user.id,
+      email: user.email,
+      username: user.username,
+    });
+
+    // Retourner les données sans le mot de passe
+    const { password: _, ...userWithoutPassword } = user;
+
+    return {
+      user: userWithoutPassword,
+      token,
+    };
   }
 
-  // Récupérer le profil
-  async getMe(userId: string): Promise<User | null> {
-    return prisma.user.findUnique({ where: { id: userId } });
+  // Récupérer le profil de l'utilisateur connecté
+  async getMe(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        fullName: true,
+        avatar: true,
+        bio: true,
+        xp: true,
+        level: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            enrollments: true,
+            roadmaps: true,
+            achievements: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new AppError('User not found', 404);
+    }
+
+    return user;
   }
 
   // Mettre à jour le profil
-  async updateProfile(userId: string, data: Partial<RegisterData>): Promise<User> {
-    return prisma.user.update({ where: { id: userId }, data });
+  async updateProfile(userId: string, data: Partial<RegisterData>) {
+    const { fullName, username } = data;
+
+    // Si le username est modifié, vérifier qu'il n'est pas déjà pris
+    if (username) {
+      const existingUser = await prisma.user.findUnique({
+        where: { username },
+      });
+
+      if (existingUser && existingUser.id !== userId) {
+        throw new AppError('Username already taken', 409);
+      }
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(fullName && { fullName }),
+        ...(username && { username }),
+      },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        fullName: true,
+        avatar: true,
+        bio: true,
+        xp: true,
+        level: true,
+      },
+    });
+
+    return user;
   }
 }
-
-export const authService = new AuthService();

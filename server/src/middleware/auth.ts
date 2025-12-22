@@ -10,11 +10,11 @@ declare global {
   }
 }
 
-export const authMiddleware = (
+export const authMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction
-): void => {
+): Promise<void> => {
   try {
     // Récupérer le token depuis le header Authorization
     const authHeader = req.headers.authorization;
@@ -41,15 +41,15 @@ export const authMiddleware = (
       success: false,
       message: 'Invalid token. Authorization denied.',
     });
-    return;
   }
 };
 
 // Middleware optionnel : vérifie le token s'il existe mais ne bloque pas
 export const optionalAuth = async (
   req: Request,
+  res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
 

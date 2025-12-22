@@ -17,6 +17,9 @@ export interface AuthResponse {
   token: string;
 }
 
+// Type helper for JSON
+export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+
 // Course types
 export interface Course {
   id: string;
@@ -67,6 +70,7 @@ export interface Challenge {
   description: string;
   difficulty: 'easy' | 'medium' | 'hard';
   language: string;
+  code?: string;
   testCases: {
     inputs: any[];
     outputs: any[];

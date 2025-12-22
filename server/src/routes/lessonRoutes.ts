@@ -8,10 +8,10 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // Routes pour la progression AVANT les routes avec :id
-router.post('/progress', lessonController.saveProgress);
-router.get('/progress', lessonController.getUserProgress);
+router.post('/progress', lessonController.saveProgress.bind(lessonController));
+router.get('/progress', lessonController.getUserProgress.bind(lessonController));
 
 // Route pour une leçon spécifique
-router.get('/:id', lessonController.getLessonById);
+router.get('/:id', lessonController.getLessonById.bind(lessonController));
 
 export default router;

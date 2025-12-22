@@ -1,4 +1,4 @@
-import jwt, { SignOptions, Secret } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { config } from '../config/env';
 
 export interface JwtPayload {
@@ -7,22 +7,17 @@ export interface JwtPayload {
   username: string;
 }
 
-// Secret
-const secret: Secret = config.jwt.secret;
-if (!secret) throw new Error('JWT secret is not defined');
-
-// Sign options avec typage correct pour expiresIn
-const signOptions: SignOptions = {
-  expiresIn: (config.jwt.expiresIn ?? '1h') as `${number}${"d" | "h" | "m" | "s"}`, 
-};
-
 export const generateToken = (payload: JwtPayload): string => {
-  return jwt.sign(payload, secret, signOptions);
+  return jwt.sign(
+    payload, 
+    config.jwt.secret,
+    { expiresIn: config.jwt.expiresIn } as jwt.SignOptions
+  );
 };
 
 export const verifyToken = (token: string): JwtPayload => {
   try {
-    return jwt.verify(token, secret) as JwtPayload;
+    return jwt.verify(token, config.jwt.secret) as JwtPayload;
   } catch (error) {
     throw new Error('Invalid or expired token');
   }

@@ -1,6 +1,10 @@
 import app from './app';
 import { config } from './config/env';
 import prisma from './config/database';
+import { EventEmitter } from 'events';
+
+// Augmenter la limite des event listeners
+EventEmitter.defaultMaxListeners = 15;
 
 const PORT = config.port;
 

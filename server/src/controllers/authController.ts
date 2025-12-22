@@ -5,7 +5,7 @@ const authService = new AuthService();
 
 export class AuthController {
   // POST /api/auth/register
-  async register(req: Request, res: Response, next: NextFunction) {
+  async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const result = await authService.register(req.body);
 
@@ -20,7 +20,7 @@ export class AuthController {
   }
 
   // POST /api/auth/login
-  async login(req: Request, res: Response, next: NextFunction) {
+  async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const result = await authService.login(req.body);
 
@@ -35,7 +35,7 @@ export class AuthController {
   }
 
   // GET /api/auth/me
-  async getMe(req: Request, res: Response, next: NextFunction) {
+  async getMe(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user!.userId;
       const user = await authService.getMe(userId);
@@ -50,7 +50,7 @@ export class AuthController {
   }
 
   // PUT /api/auth/profile
-  async updateProfile(req: Request, res: Response, next: NextFunction) {
+  async updateProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user!.userId;
       const user = await authService.updateProfile(userId, req.body);

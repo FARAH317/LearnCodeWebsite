@@ -6,11 +6,11 @@ import { validate, registerSchema, loginSchema } from '../middleware/validation'
 const router = express.Router();
 
 // Routes publiques
-router.post('/register', validate(registerSchema), authController.register);
-router.post('/login', validate(loginSchema), authController.login);
+router.post('/register', validate(registerSchema), authController.register.bind(authController));
+router.post('/login', validate(loginSchema), authController.login.bind(authController));
 
 // Routes protégées (nécessitent authentification)
-router.get('/me', authMiddleware, authController.getMe);
-router.put('/profile', authMiddleware, authController.updateProfile);
+router.get('/me', authMiddleware, authController.getMe.bind(authController));
+router.put('/profile', authMiddleware, authController.updateProfile.bind(authController));
 
 export default router;

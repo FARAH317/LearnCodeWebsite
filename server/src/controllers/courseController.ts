@@ -4,7 +4,7 @@ import { AppError } from '../middleware/errorHandler';
 
 export class CourseController {
   // GET /api/courses - Récupérer tous les cours
-  async getAllCourses(req: Request, res: Response, next: NextFunction) {
+  async getAllCourses(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const courses = await prisma.course.findMany({
         where: { isPublished: true },
@@ -26,7 +26,7 @@ export class CourseController {
   }
 
   // GET /api/courses/:id - Récupérer un cours par ID
-  async getCourseById(req: Request, res: Response, next: NextFunction) {
+  async getCourseById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
 
@@ -53,7 +53,7 @@ export class CourseController {
   }
 
   // GET /api/courses/:id/lessons - Récupérer les leçons d'un cours
-  async getCourseLessons(req: Request, res: Response, next: NextFunction) {
+  async getCourseLessons(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
 
@@ -72,7 +72,7 @@ export class CourseController {
   }
 
   // POST /api/courses/:id/enroll - S'inscrire à un cours
-  async enrollCourse(req: Request, res: Response, next: NextFunction) {
+  async enrollCourse(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
       const userId = req.user!.userId;
@@ -110,7 +110,7 @@ export class CourseController {
   }
 
   // GET /api/courses/my-courses - Récupérer mes cours
-  async getMyCourses(req: Request, res: Response, next: NextFunction) {
+  async getMyCourses(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user!.userId;
 
@@ -127,9 +127,7 @@ export class CourseController {
         },
       });
 
-      const courses = enrollments.map((e: { course: typeof prisma.course }) => e.course);
-
-
+      const courses = enrollments.map((e: any) => e.course);
 
       res.status(200).json({
         success: true,

@@ -4,7 +4,7 @@ import { AppError } from '../middleware/errorHandler';
 
 export class LessonController {
   // GET /api/lessons/:id
-  async getLessonById(req: Request, res: Response, next: NextFunction) {
+  async getLessonById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
 
@@ -29,8 +29,8 @@ export class LessonController {
     }
   }
 
-  // POST /api/progress
-  async saveProgress(req: Request, res: Response, next: NextFunction) {
+  // POST /api/lessons/progress
+  async saveProgress(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user!.userId;
       const { lessonId, code, completed } = req.body;
@@ -96,8 +96,8 @@ export class LessonController {
     }
   }
 
-  // GET /api/progress
-  async getUserProgress(req: Request, res: Response, next: NextFunction) {
+  // GET /api/lessons/progress
+  async getUserProgress(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user!.userId;
 

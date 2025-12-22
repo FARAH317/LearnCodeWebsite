@@ -18,29 +18,32 @@ export const errorHandler = (
   _req: Request,
   res: Response,
   _next: NextFunction
-) => {
+): void => {
   // Si c'est une AppError
   if (err instanceof AppError) {
-    return res.status(err.statusCode).json({
+    res.status(err.statusCode).json({
       success: false,
       message: err.message,
     });
+    return;
   }
 
   // Erreurs Prisma
   if (err.name === 'PrismaClientKnownRequestError') {
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       message: 'Database error occurred',
     });
+    return;
   }
 
   // Erreurs de validation
   if (err.name === 'ValidationError') {
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       message: err.message,
     });
+    return;
   }
 
   // Log l'erreur en développement
@@ -49,7 +52,7 @@ export const errorHandler = (
   }
 
   // Erreur générique
-  return res.status(500).json({
+  res.status(500).json({
     success: false,
     message: 'Internal server error',
     ...(process.env.NODE_ENV === 'development' && { error: err.message }),
@@ -57,7 +60,7 @@ export const errorHandler = (
 };
 
 // Middleware pour gérer les routes non trouvées
-export const notFoundHandler = (req: Request, res: Response) => {
+export const notFoundHandler = (req: Request, res: Response): void => {
   res.status(404).json({
     success: false,
     message: `Route ${req.originalUrl} not found`,

@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Route de santé
-app.get('/health', (_req, res) => {
+app.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Server is running',
