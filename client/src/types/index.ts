@@ -97,6 +97,12 @@ export interface Roadmap {
   };
   createdAt: string;
   updatedAt: string;
+  user?: User;
+  steps?: RoadmapStep[];
+  _count?: {
+    steps: number;
+    comments: number;
+  };
 }
 
 export interface RoadmapNode {

@@ -7,6 +7,8 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import authRoutes from './routes/authRoutes';
 import courseRoutes from './routes/courseRoutes';
 import lessonRoutes from './routes/lessonRoutes';
+import challengeRoutes from './routes/challengeRoutes';
+import roadmapRoutes from './routes/roadmapRoutes';
 
 const app: Application = express();
 
@@ -32,6 +34,9 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/lessons', lessonRoutes);
+app.use('/api/challenges', challengeRoutes);
+app.use('/api/roadmaps', roadmapRoutes);
+app.use('/api/progress', lessonRoutes); // Progress routes are in lessonRoutes
 
 // Gestion des routes non trouvées
 app.use(notFoundHandler);

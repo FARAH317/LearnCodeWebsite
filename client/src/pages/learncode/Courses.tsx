@@ -5,7 +5,6 @@ import {
   Search,
   Filter,
   Code2,
-  Clock,
   Trophy,
   BookOpen,
   ChevronRight,

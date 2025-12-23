@@ -13,7 +13,6 @@ import {
   Target,
 } from 'lucide-react';
 import { useCourseStore } from '@/store/courseStore';
-import { useAuthStore } from '@/store/authStore';
 import Navbar from '@/components/common/Navbar';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
@@ -22,7 +21,6 @@ const CourseDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentCourse, lessons, progress, fetchCourse, fetchLessons, fetchProgress, enrollCourse, isLoading } = useCourseStore();
-  const { user } = useAuthStore();
   const [isEnrolled, setIsEnrolled] = useState(false);
 
   useEffect(() => {
