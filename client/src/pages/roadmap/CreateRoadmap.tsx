@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Plus, Trash2, Save, GripVertical } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, GripVertical, Sparkles } from 'lucide-react';
 import { useRoadmapStore } from '@/store/roadmapStore';
 import Navbar from '@/components/common/Navbar';
-import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
 import { ROADMAP_CATEGORIES, ROADMAP_CATEGORY_LABELS } from '@/utils/constants';
@@ -57,13 +56,11 @@ const CreateRoadmap = () => {
     e.preventDefault();
 
     try {
-      // Créer la roadmap
       const roadmap = await createRoadmap({
         ...formData,
-        data: { nodes: [], edges: [] }, // Simplified for now
+        data: { nodes: [], edges: [] },
       });
 
-      // Ajouter les étapes
       if (steps.length > 0 && steps[0].title) {
         await updateSteps(roadmap.id, steps);
       }
@@ -75,7 +72,7 @@ const CreateRoadmap = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark-900">
+    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
       <Navbar />
 
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
@@ -83,20 +80,23 @@ const CreateRoadmap = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-12"
         >
           <Link
             to="/roadmaps"
-            className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors"
+            className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors group"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Retour aux roadmaps
           </Link>
 
-          <h1 className="text-4xl font-black mb-2">
-            Créer une <span className="gradient-text">Roadmap</span>
-          </h1>
-          <p className="text-gray-400">
+          <div className="flex items-center gap-3 mb-4">
+            <Sparkles className="w-8 h-8 text-primary-400" />
+            <h1 className="text-4xl md:text-5xl font-black">
+              Créer une <span className="gradient-text">Roadmap</span>
+            </h1>
+          </div>
+          <p className="text-xl text-gray-400">
             Définissez votre parcours d'apprentissage étape par étape
           </p>
         </motion.div>
@@ -107,11 +107,12 @@ const CreateRoadmap = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
+            className="mb-8"
           >
-            <Card glass className="mb-6">
-              <h2 className="text-xl font-bold mb-4">Informations générales</h2>
+            <div className="bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm rounded-2xl p-8">
+              <h2 className="text-2xl font-bold mb-6">Informations générales</h2>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <Input
                   label="Titre"
                   placeholder="Ex: Devenir développeur Full Stack"
@@ -132,7 +133,7 @@ const CreateRoadmap = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
-                    className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-3 text-white placeholder:text-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent hover:border-dark-600 min-h-[100px]"
+                    className="w-full rounded-xl bg-dark-800/50 border border-white/10 px-4 py-3 text-white placeholder:text-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent hover:border-white/20 min-h-[100px] resize-none"
                   />
                 </div>
 
@@ -145,7 +146,7 @@ const CreateRoadmap = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, category: e.target.value })
                     }
-                    className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full rounded-xl bg-dark-800/50 border border-white/10 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer transition-all"
                     required
                   >
                     {ROADMAP_CATEGORIES.map((cat) => (
@@ -156,7 +157,7 @@ const CreateRoadmap = () => {
                   </select>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 p-4 bg-dark-800/50 rounded-xl">
                   <input
                     type="checkbox"
                     id="isPublic"
@@ -164,14 +165,14 @@ const CreateRoadmap = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, isPublic: e.target.checked })
                     }
-                    className="w-4 h-4 text-primary-500 bg-dark-800 border-dark-700 rounded focus:ring-primary-500 focus:ring-2"
+                    className="w-5 h-5 text-primary-500 bg-dark-800 border-white/20 rounded focus:ring-primary-500 focus:ring-2 cursor-pointer"
                   />
-                  <label htmlFor="isPublic" className="text-sm text-gray-300">
-                    Rendre cette roadmap publique
+                  <label htmlFor="isPublic" className="text-sm text-gray-300 cursor-pointer flex-1">
+                    Rendre cette roadmap publique (visible par tous les utilisateurs)
                   </label>
                 </div>
               </div>
-            </Card>
+            </div>
           </motion.div>
 
           {/* Steps */}
@@ -179,10 +180,11 @@ const CreateRoadmap = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
+            className="mb-8"
           >
-            <Card glass className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">Étapes</h2>
+            <div className="bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm rounded-2xl p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold">Étapes du parcours</h2>
                 <Button
                   type="button"
                   variant="outline"
@@ -196,16 +198,16 @@ const CreateRoadmap = () => {
 
               <div className="space-y-4">
                 {steps.map((step, index) => (
-                  <Card key={step.id} className="bg-dark-800">
-                    <div className="flex items-start gap-3">
-                      <div className="flex items-center gap-2 flex-shrink-0 pt-2">
+                  <div key={step.id} className="bg-dark-800/50 rounded-xl p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="flex items-center gap-3 flex-shrink-0 pt-2">
                         <GripVertical className="w-5 h-5 text-gray-500" />
-                        <span className="w-8 h-8 bg-primary-500/20 rounded-lg flex items-center justify-center text-primary-400 font-bold text-sm">
-                          {index + 1}
-                        </span>
+                        <div className="w-10 h-10 bg-primary-500/20 rounded-xl flex items-center justify-center">
+                          <span className="text-primary-400 font-bold">{index + 1}</span>
+                        </div>
                       </div>
 
-                      <div className="flex-1 space-y-3">
+                      <div className="flex-1 space-y-4">
                         <Input
                           placeholder="Titre de l'étape"
                           value={step.title}
@@ -224,7 +226,7 @@ const CreateRoadmap = () => {
                               e.target.value
                             )
                           }
-                          className="w-full rounded-lg bg-dark-700 border border-dark-600 px-4 py-2 text-white placeholder:text-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full rounded-xl bg-dark-700/50 border border-white/10 px-4 py-2 text-white placeholder:text-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
                           rows={2}
                         />
                       </div>
@@ -233,16 +235,16 @@ const CreateRoadmap = () => {
                         <button
                           type="button"
                           onClick={() => handleRemoveStep(step.id)}
-                          className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-red-400"
+                          className="p-2 hover:bg-red-500/10 rounded-xl transition-colors text-red-400"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       )}
                     </div>
-                  </Card>
+                  </div>
                 ))}
               </div>
-            </Card>
+            </div>
           </motion.div>
 
           {/* Actions */}
@@ -256,6 +258,7 @@ const CreateRoadmap = () => {
               type="submit"
               isLoading={isLoading}
               className="flex-1"
+              size="lg"
               icon={<Save className="w-5 h-5" />}
             >
               Créer la roadmap
@@ -263,6 +266,7 @@ const CreateRoadmap = () => {
             <Button
               type="button"
               variant="outline"
+              size="lg"
               onClick={() => navigate('/roadmaps')}
             >
               Annuler

@@ -3,15 +3,14 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Search,
-  Filter,
   Code2,
   Trophy,
   BookOpen,
   ChevronRight,
+  Sparkles,
 } from 'lucide-react';
 import { useCourseStore } from '@/store/courseStore';
 import Navbar from '@/components/common/Navbar';
-import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
 
@@ -28,6 +27,13 @@ const Courses = () => {
   const languages = ['all', 'html', 'javascript', 'python', 'css', 'react'];
   const difficulties = ['all', 'beginner', 'intermediate', 'advanced'];
 
+  const difficultyLabels = {
+    all: 'Toutes',
+    beginner: 'Débutant',
+    intermediate: 'Intermédiaire',
+    advanced: 'Avancé',
+  };
+
   const filteredCourses = courses.filter((course) => {
     const matchesSearch =
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -41,13 +47,13 @@ const Courses = () => {
   });
 
   const difficultyColors = {
-    beginner: 'text-green-400 bg-green-500/20',
-    intermediate: 'text-yellow-400 bg-yellow-500/20',
-    advanced: 'text-red-400 bg-red-500/20',
+    beginner: { bg: 'bg-green-500/10', text: 'text-green-400' },
+    intermediate: { bg: 'bg-yellow-500/10', text: 'text-yellow-400' },
+    advanced: { bg: 'bg-red-500/10', text: 'text-red-400' },
   };
 
   return (
-    <div className="min-h-screen bg-dark-900">
+    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
       <Navbar />
 
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -55,12 +61,15 @@ const Courses = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-12"
         >
-          <h1 className="text-4xl font-black mb-2">
-            Explorez nos <span className="gradient-text">cours</span>
-          </h1>
-          <p className="text-gray-400">
+          <div className="flex items-center gap-3 mb-4">
+            <Sparkles className="w-8 h-8 text-primary-400" />
+            <h1 className="text-4xl md:text-5xl font-black">
+              Explorez nos <span className="gradient-text">cours</span>
+            </h1>
+          </div>
+          <p className="text-xl text-gray-400">
             Apprenez à votre rythme avec nos cours interactifs
           </p>
         </motion.div>
@@ -70,9 +79,9 @@ const Courses = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-8"
+          className="mb-12"
         >
-          <Card glass>
+          <div className="bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm rounded-2xl p-6">
             <div className="grid md:grid-cols-3 gap-4">
               {/* Search */}
               <div className="md:col-span-3">
@@ -93,7 +102,7 @@ const Courses = () => {
                 <select
                   value={selectedLanguage}
                   onChange={(e) => setSelectedLanguage(e.target.value)}
-                  className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
+                  className="w-full rounded-xl bg-dark-800/50 border border-white/10 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer transition-all"
                 >
                   {languages.map((lang) => (
                     <option key={lang} value={lang}>
@@ -111,17 +120,11 @@ const Courses = () => {
                 <select
                   value={selectedDifficulty}
                   onChange={(e) => setSelectedDifficulty(e.target.value)}
-                  className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
+                  className="w-full rounded-xl bg-dark-800/50 border border-white/10 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer transition-all"
                 >
                   {difficulties.map((diff) => (
                     <option key={diff} value={diff}>
-                      {diff === 'all'
-                        ? 'Toutes les difficultés'
-                        : diff === 'beginner'
-                        ? 'Débutant'
-                        : diff === 'intermediate'
-                        ? 'Intermédiaire'
-                        : 'Avancé'}
+                      {difficultyLabels[diff as keyof typeof difficultyLabels]}
                     </option>
                   ))}
                 </select>
@@ -134,7 +137,7 @@ const Courses = () => {
                 </p>
               </div>
             </div>
-          </Card>
+          </div>
         </motion.div>
 
         {/* Courses Grid */}
@@ -152,84 +155,75 @@ const Courses = () => {
                 key={course.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * 0.05 }}
               >
-                <Card hover gradient className="h-full flex flex-col">
-                  {/* Course Header */}
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Code2 className="w-7 h-7" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-1 line-clamp-2">
-                        {course.title}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs px-2 py-1 bg-primary-500/20 text-primary-400 rounded">
-                          {course.language.toUpperCase()}
-                        </span>
-                        <span
-                          className={`text-xs px-2 py-1 rounded ${
-                            difficultyColors[course.difficulty]
-                          }`}
-                        >
-                          {course.difficulty === 'beginner'
-                            ? 'Débutant'
-                            : course.difficulty === 'intermediate'
-                            ? 'Intermédiaire'
-                            : 'Avancé'}
-                        </span>
+                <Link to={`/courses/${course.id}`}>
+                  <motion.div
+                    whileHover={{ y: -8 }}
+                    className="h-full bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm rounded-2xl p-6 hover:from-white/10 hover:to-white/5 transition-all duration-300 group"
+                  >
+                    {/* Course Header */}
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                        <Code2 className="w-7 h-7" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <span className="text-xs px-2 py-1 bg-primary-500/20 text-primary-400 rounded-lg font-medium">
+                            {course.language.toUpperCase()}
+                          </span>
+                          <span className={`text-xs px-2 py-1 rounded-lg ${difficultyColors[course.difficulty].bg} ${difficultyColors[course.difficulty].text}`}>
+                            {difficultyLabels[course.difficulty as keyof typeof difficultyLabels]}
+                          </span>
+                        </div>
+                        <h3 className="font-bold text-lg mb-1 line-clamp-2 group-hover:text-primary-400 transition-colors">
+                          {course.title}
+                        </h3>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Description */}
-                  <p className="text-gray-400 text-sm mb-4 flex-1 line-clamp-3">
-                    {course.description}
-                  </p>
+                    {/* Description */}
+                    <p className="text-gray-400 text-sm mb-6 line-clamp-3">
+                      {course.description}
+                    </p>
 
-                  {/* Footer */}
-                  <div className="flex items-center justify-between pt-4 border-t border-dark-700">
-                    <div className="flex items-center gap-4 text-sm text-gray-400">
-                      <div className="flex items-center gap-1">
-                        <Trophy className="w-4 h-4" />
-                        <span>{course.xpReward} XP</span>
+                    {/* Footer */}
+                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                      <div className="flex items-center gap-4 text-sm text-gray-400">
+                        <div className="flex items-center gap-1">
+                          <Trophy className="w-4 h-4 text-yellow-400" />
+                          <span>{course.xpReward} XP</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <BookOpen className="w-4 h-4" />
+                          <span>8 leçons</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <BookOpen className="w-4 h-4" />
-                        <span>8 leçons</span>
-                      </div>
+                      <ChevronRight className="w-5 h-5 text-primary-400 group-hover:translate-x-1 transition-transform" />
                     </div>
-                    <Link to={`/courses/${course.id}`}>
-                      <Button size="sm" icon={<ChevronRight className="w-4 h-4" />}>
-                        Voir
-                      </Button>
-                    </Link>
-                  </div>
-                </Card>
+                  </motion.div>
+                </Link>
               </motion.div>
             ))}
           </div>
         ) : (
-          <Card glass>
-            <div className="text-center py-12">
-              <Filter className="w-16 h-16 mx-auto mb-4 text-gray-600" />
-              <h3 className="text-xl font-bold mb-2">Aucun cours trouvé</h3>
-              <p className="text-gray-400 mb-4">
-                Essayez de modifier vos filtres de recherche
-              </p>
-              <Button
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedLanguage('all');
-                  setSelectedDifficulty('all');
-                }}
-                variant="outline"
-              >
-                Réinitialiser les filtres
-              </Button>
-            </div>
-          </Card>
+          <div className="bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm rounded-2xl p-12 text-center">
+            <Search className="w-16 h-16 mx-auto mb-4 text-gray-600" />
+            <h3 className="text-xl font-bold mb-2">Aucun cours trouvé</h3>
+            <p className="text-gray-400 mb-6">
+              Essayez de modifier vos filtres de recherche
+            </p>
+            <Button
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedLanguage('all');
+                setSelectedDifficulty('all');
+              }}
+              variant="outline"
+            >
+              Réinitialiser les filtres
+            </Button>
+          </div>
         )}
       </div>
     </div>
