@@ -9,11 +9,11 @@ import {
   BookOpen,
   Trophy,
   Sparkles,
+  Save,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useCourseStore } from '@/store/courseStore';
 import Navbar from '@/components/common/Navbar';
-import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import CodeEditor from '@/components/learncode/CodeEditor';
 
@@ -22,12 +22,11 @@ const Lesson = () => {
   const navigate = useNavigate();
   const { currentLesson, currentCourse, lessons, progress, fetchLesson, fetchLessons, saveProgress, isLoading } = useCourseStore();
 
-const [code, setCode] = useState('');
-const [showHints, setShowHints] = useState(false);
-const [showSolution, setShowSolution] = useState(false);
-const [isCompleted, setIsCompleted] = useState(false);
-const [showSuccess, setShowSuccess] = useState(false);
-
+  const [code, setCode] = useState('');
+  const [showHints, setShowHints] = useState(false);
+  const [showSolution, setShowSolution] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -37,7 +36,6 @@ const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     if (currentLesson) {
-      // Charger le code sauvegardé ou le code par défaut
       const savedProgress = progress.find((p) => p.lessonId === currentLesson.id);
       if (savedProgress?.code) {
         setCode(savedProgress.code);
@@ -46,7 +44,6 @@ const [showSuccess, setShowSuccess] = useState(false);
       }
       setIsCompleted(savedProgress?.completed || false);
 
-      // Charger les leçons du cours pour la navigation
       if (currentLesson.courseId && lessons.length === 0) {
         fetchLessons(currentLesson.courseId);
       }
@@ -69,8 +66,6 @@ const [showSuccess, setShowSuccess] = useState(false);
   };
 
   const handleValidate = () => {
-    // Ici, vous pourriez ajouter une vraie validation du code
-    // Pour l'instant, on marque simplement comme complété
     handleSaveProgress(true);
   };
 
@@ -96,7 +91,7 @@ const [showSuccess, setShowSuccess] = useState(false);
 
   if (isLoading || !currentLesson) {
     return (
-      <div className="min-h-screen bg-dark-900">
+      <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
         <Navbar />
         <div className="pt-24 flex items-center justify-center">
           <div className="text-center">
@@ -109,7 +104,7 @@ const [showSuccess, setShowSuccess] = useState(false);
   }
 
   return (
-    <div className="min-h-screen bg-dark-900">
+    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
       <Navbar />
 
       {/* Success Notification */}
@@ -121,34 +116,34 @@ const [showSuccess, setShowSuccess] = useState(false);
             exit={{ opacity: 0, y: -100 }}
             className="fixed top-20 left-1/2 -translate-x-1/2 z-50"
           >
-            <Card className="bg-green-500/20 border-2 border-green-500 flex items-center gap-3 px-6 py-3">
+            <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl border-2 border-green-500 rounded-2xl flex items-center gap-3 px-6 py-4 shadow-2xl">
               <CheckCircle className="w-6 h-6 text-green-400" />
               <div>
                 <p className="font-bold text-green-400">Leçon complétée ! 🎉</p>
                 <p className="text-sm text-gray-300">+{currentLesson.xpReward} XP</p>
               </div>
-            </Card>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-8">
           <button
             onClick={handleBackToCourse}
-            className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Retour au cours
           </button>
 
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-400">
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-400 font-medium">
               Leçon {currentLessonIndex + 1} / {lessons.length}
             </span>
             {isCompleted && (
-              <div className="flex items-center gap-1 px-2 py-1 bg-green-500/20 rounded text-xs text-green-400">
+              <div className="flex items-center gap-1 px-3 py-1 bg-green-500/20 rounded-lg text-xs text-green-400 font-medium">
                 <CheckCircle className="w-3 h-3" />
                 Complétée
               </div>
@@ -156,31 +151,33 @@ const [showSuccess, setShowSuccess] = useState(false);
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid lg:grid-cols-2 gap-8">
           {/* Left: Content */}
           <div className="space-y-6 custom-scrollbar max-h-[calc(100vh-200px)] overflow-y-auto pr-4">
             {/* Lesson Header */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <Card gradient>
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <BookOpen className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl font-black mb-1">{currentLesson.title}</h1>
-                    <p className="text-gray-400">{currentLesson.description}</p>
-                  </div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} 
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-gradient-to-br from-primary-500/10 to-secondary-500/10 backdrop-blur-sm rounded-2xl p-8"
+            >
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <BookOpen className="w-7 h-7" />
                 </div>
-                <div className="flex items-center gap-4 pt-3 border-t border-dark-700">
-                  <span className="text-sm text-gray-400 flex items-center gap-1">
-                    <Trophy className="w-4 h-4 text-primary-400" />
-                    +{currentLesson.xpReward} XP
-                  </span>
-                  <span className="text-sm text-gray-400">
-                    ~15 min
-                  </span>
+                <div className="flex-1">
+                  <h1 className="text-3xl font-black mb-2">{currentLesson.title}</h1>
+                  <p className="text-gray-300">{currentLesson.description}</p>
                 </div>
-              </Card>
+              </div>
+              <div className="flex items-center gap-6 pt-4 border-t border-white/10">
+                <span className="text-sm text-gray-400 flex items-center gap-1">
+                  <Trophy className="w-4 h-4 text-yellow-400" />
+                  +{currentLesson.xpReward} XP
+                </span>
+                <span className="text-sm text-gray-400">
+                  ~15 min
+                </span>
+              </div>
             </motion.div>
 
             {/* Lesson Content */}
@@ -188,12 +185,11 @@ const [showSuccess, setShowSuccess] = useState(false);
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
+              className="bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm rounded-2xl p-8"
             >
-              <Card glass>
-                <div className="prose prose-invert max-w-none">
-                  <ReactMarkdown>{currentLesson.content}</ReactMarkdown>
-                </div>
-              </Card>
+              <div className="prose prose-invert max-w-none prose-headings:font-bold prose-headings:text-white prose-p:text-gray-300 prose-a:text-primary-400 prose-strong:text-white prose-code:text-primary-400 prose-code:bg-dark-800 prose-code:px-2 prose-code:py-1 prose-code:rounded">
+                <ReactMarkdown>{currentLesson.content}</ReactMarkdown>
+              </div>
             </motion.div>
 
             {/* Hints */}
@@ -202,37 +198,36 @@ const [showSuccess, setShowSuccess] = useState(false);
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
+                className="bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm rounded-2xl p-6"
               >
-                <Card glass>
-                  <button
-                    onClick={() => setShowHints(!showHints)}
-                    className="flex items-center gap-2 font-bold mb-3 hover:text-primary-400 transition-colors"
-                  >
-                    <Lightbulb className="w-5 h-5" />
-                    <span>Indices ({currentLesson.hints.length})</span>
-                  </button>
-                  <AnimatePresence>
-                    {showHints && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-2"
-                      >
-                        {currentLesson.hints.map((hint, index) => (
-                          <div
-                            key={index}
-                            className="p-3 bg-primary-500/10 border border-primary-500/20 rounded-lg"
-                          >
-                            <p className="text-sm text-gray-300">
-                              {index + 1}. {hint}
-                            </p>
-                          </div>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </Card>
+                <button
+                  onClick={() => setShowHints(!showHints)}
+                  className="flex items-center gap-2 font-bold mb-4 hover:text-primary-400 transition-colors w-full text-left"
+                >
+                  <Lightbulb className="w-5 h-5" />
+                  <span>Indices ({currentLesson.hints.length})</span>
+                </button>
+                <AnimatePresence>
+                  {showHints && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-3"
+                    >
+                      {currentLesson.hints.map((hint, index) => (
+                        <div
+                          key={index}
+                          className="p-4 bg-primary-500/10 border border-primary-500/20 rounded-xl"
+                        >
+                          <p className="text-sm text-gray-300">
+                            {index + 1}. {hint}
+                          </p>
+                        </div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             )}
 
@@ -242,31 +237,30 @@ const [showSuccess, setShowSuccess] = useState(false);
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
+                className="bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm rounded-2xl p-6"
               >
-                <Card glass>
-                  <button
-                    onClick={() => setShowSolution(!showSolution)}
-                    className="flex items-center gap-2 font-bold mb-3 hover:text-secondary-400 transition-colors"
-                  >
-                    <Sparkles className="w-5 h-5" />
-                    <span>Voir la solution</span>
-                  </button>
-                  <AnimatePresence>
-                    {showSolution && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                      >
-                        <div className="p-3 bg-secondary-500/10 border border-secondary-500/20 rounded-lg">
-                          <pre className="text-sm font-mono text-gray-300 overflow-x-auto">
-                            {currentLesson.solution}
-                          </pre>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </Card>
+                <button
+                  onClick={() => setShowSolution(!showSolution)}
+                  className="flex items-center gap-2 font-bold mb-4 hover:text-secondary-400 transition-colors w-full text-left"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  <span>Voir la solution</span>
+                </button>
+                <AnimatePresence>
+                  {showSolution && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                    >
+                      <div className="p-4 bg-secondary-500/10 border border-secondary-500/20 rounded-xl">
+                        <pre className="text-sm font-mono text-gray-300 overflow-x-auto">
+                          {currentLesson.solution}
+                        </pre>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             )}
           </div>
@@ -279,12 +273,11 @@ const [showSuccess, setShowSuccess] = useState(false);
               transition={{ delay: 0.2 }}
             >
               <CodeEditor
-  language={currentCourse?.language || 'javascript'}
-  defaultValue={code}
-  onRun={(newCode) => setCode(newCode)}
-  height="500px"
-/>
-
+                language={currentCourse?.language || 'javascript'}
+                defaultValue={code}
+                onRun={(newCode) => setCode(newCode)}
+                height="500px"
+              />
             </motion.div>
 
             {/* Actions */}
@@ -292,48 +285,46 @@ const [showSuccess, setShowSuccess] = useState(false);
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
+              className="bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm rounded-2xl p-6"
             >
-              <Card glass>
-                <div className="space-y-3">
+              <div className="space-y-3">
+                <Button
+                  onClick={handleValidate}
+                  className="w-full"
+                  variant={isCompleted ? 'secondary' : 'primary'}
+                  icon={isCompleted ? <CheckCircle className="w-5 h-5" /> : <Trophy className="w-5 h-5" />}
+                >
+                  {isCompleted ? 'Marquer comme non complété' : 'Valider et compléter'}
+                </Button>
+
+                <div className="grid grid-cols-2 gap-2">
                   <Button
-                    onClick={handleValidate}
-                    className="w-full"
-                    variant={isCompleted ? 'secondary' : 'primary'}
-                    icon={isCompleted ? <CheckCircle className="w-5 h-5" /> : <Trophy className="w-5 h-5" />}
+                    onClick={handlePrev}
+                    disabled={!hasPrevLesson}
+                    variant="outline"
+                    icon={<ArrowLeft className="w-4 h-4" />}
                   >
-                    {isCompleted ? 'Marquer comme non complété' : 'Valider et compléter'}
+                    Précédent
                   </Button>
-
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handlePrev}
-                      disabled={!hasPrevLesson}
-                      variant="outline"
-                      className="flex-1"
-                      icon={<ArrowLeft className="w-4 h-4" />}
-                    >
-                      Précédent
-                    </Button>
-                    <Button
-                      onClick={handleNext}
-                      disabled={!hasNextLesson}
-                      variant="outline"
-                      className="flex-1"
-                      icon={<ArrowRight className="w-4 h-4" />}
-                    >
-                      Suivant
-                    </Button>
-                  </div>
-
                   <Button
-                    onClick={() => handleSaveProgress(false)}
-                    variant="ghost"
-                    className="w-full"
+                    onClick={handleNext}
+                    disabled={!hasNextLesson}
+                    variant="outline"
+                    icon={<ArrowRight className="w-4 h-4" />}
                   >
-                    Sauvegarder la progression
+                    Suivant
                   </Button>
                 </div>
-              </Card>
+
+                <Button
+                  onClick={() => handleSaveProgress(false)}
+                  variant="ghost"
+                  className="w-full"
+                  icon={<Save className="w-4 h-4" />}
+                >
+                  Sauvegarder
+                </Button>
+              </div>
             </motion.div>
           </div>
         </div>

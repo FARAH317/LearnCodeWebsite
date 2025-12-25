@@ -10,11 +10,10 @@ import {
   Play,
   Zap,
   Target,
+  Flame,
 } from 'lucide-react';
 import { useChallengeStore } from '@/store/challengeStore';
-import { useAuthStore } from '@/store/authStore';
 import Navbar from '@/components/common/Navbar';
-import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import CodeEditor from '@/components/learncode/CodeEditor';
 
@@ -73,11 +72,6 @@ const ChallengeDetail = () => {
       const attemptResult = await submitAttempt(currentChallenge.id, code, timeElapsed);
       setResult(attemptResult);
       setShowResult(true);
-
-      // Refresh user data if passed
-      if (attemptResult.attempt?.passed) {
-        // Optionally refresh user data here
-      }
     } catch (error) {
       console.error('Error submitting attempt:', error);
     }
@@ -85,7 +79,7 @@ const ChallengeDetail = () => {
 
   if (isLoading || !currentChallenge) {
     return (
-      <div className="min-h-screen bg-dark-900">
+      <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
         <Navbar />
         <div className="pt-24 flex items-center justify-center">
           <div className="text-center">
@@ -97,10 +91,16 @@ const ChallengeDetail = () => {
     );
   }
 
+  const difficultyLabels = {
+    easy: 'Facile',
+    medium: 'Moyen',
+    hard: 'Difficile',
+  };
+
   const difficultyColors = {
-    easy: 'text-green-400 bg-green-500/20 border-green-500/30',
-    medium: 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30',
-    hard: 'text-red-400 bg-red-500/20 border-red-500/30',
+    easy: { bg: 'bg-green-500/10', text: 'text-green-400', ring: 'ring-green-500/30' },
+    medium: { bg: 'bg-yellow-500/10', text: 'text-yellow-400', ring: 'ring-yellow-500/30' },
+    hard: { bg: 'bg-red-500/10', text: 'text-red-400', ring: 'ring-red-500/30' },
   };
 
   const timeLimit = currentChallenge.timeLimit || 0;
@@ -108,7 +108,7 @@ const ChallengeDetail = () => {
   const isTimeUp = timeLimit > 0 && timeElapsed >= timeLimit;
 
   return (
-    <div className="min-h-screen bg-dark-900">
+    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
       <Navbar />
 
       {/* Success/Failure Modal */}
@@ -128,63 +128,54 @@ const ChallengeDetail = () => {
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-md"
             >
-              <Card
-                className={`text-center ${
-                  result.attempt?.passed
-                    ? 'border-2 border-green-500'
-                    : 'border-2 border-red-500'
-                }`}
-              >
-                <div
-                  className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center ${
-                    result.attempt?.passed
-                      ? 'bg-green-500/20'
-                      : 'bg-red-500/20'
-                  }`}
-                >
+              <div className={`bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-3xl p-8 text-center ring-2 ${
+                result.attempt?.passed ? 'ring-green-500' : 'ring-red-500'
+              }`}>
+                <div className={`w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center ${
+                  result.attempt?.passed ? 'bg-green-500/20' : 'bg-red-500/20'
+                }`}>
                   {result.attempt?.passed ? (
-                    <CheckCircle className="w-12 h-12 text-green-400" />
+                    <CheckCircle className="w-14 h-14 text-green-400" />
                   ) : (
-                    <XCircle className="w-12 h-12 text-red-400" />
+                    <XCircle className="w-14 h-14 text-red-400" />
                   )}
                 </div>
 
-                <h2 className="text-2xl font-black mb-2">
+                <h2 className="text-3xl font-black mb-3">
                   {result.attempt?.passed ? 'Défi réussi ! 🎉' : 'Échec'}
                 </h2>
 
-                <p className="text-gray-400 mb-4">
+                <p className="text-gray-400 mb-6">
                   {result.attempt?.passed
                     ? 'Félicitations ! Vous avez résolu ce défi.'
                     : 'Votre solution ne passe pas tous les tests.'}
                 </p>
 
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center justify-between p-3 bg-dark-800 rounded-lg">
+                <div className="space-y-3 mb-8">
+                  <div className="flex items-center justify-between p-4 bg-dark-800/50 rounded-xl">
                     <span className="text-gray-400">Score</span>
-                    <span className="font-bold">{result.attempt?.score}%</span>
+                    <span className="font-bold text-lg">{result.attempt?.score}%</span>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-dark-800 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-dark-800/50 rounded-xl">
                     <span className="text-gray-400">Temps</span>
-                    <span className="font-bold">{formatTime(timeElapsed)}</span>
+                    <span className="font-bold text-lg">{formatTime(timeElapsed)}</span>
                   </div>
                   {result.attempt?.passed && (
-                    <div className="flex items-center justify-between p-3 bg-primary-500/10 rounded-lg border border-primary-500/20">
+                    <div className="flex items-center justify-between p-4 bg-primary-500/10 rounded-xl border border-primary-500/20">
                       <span className="text-primary-400 flex items-center gap-2">
-                        <Zap className="w-4 h-4" />
+                        <Zap className="w-5 h-5" />
                         XP gagnés
                       </span>
-                      <span className="font-bold text-primary-400">
+                      <span className="font-bold text-lg text-primary-400">
                         +{result.xpEarned} XP
                       </span>
                     </div>
                   )}
                 </div>
 
-                <div className="flex gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <Button
                     variant="outline"
-                    className="flex-1"
                     onClick={() => {
                       setShowResult(false);
                       setIsRunning(false);
@@ -193,14 +184,11 @@ const ChallengeDetail = () => {
                   >
                     Réessayer
                   </Button>
-                  <Button
-                    className="flex-1"
-                    onClick={() => navigate('/challenges')}
-                  >
+                  <Button onClick={() => navigate('/challenges')}>
                     Autres défis
                   </Button>
                 </div>
-              </Card>
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -208,96 +196,87 @@ const ChallengeDetail = () => {
 
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => navigate('/challenges')}
-            className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Retour aux défis
           </button>
 
           {/* Timer */}
           <div className="flex items-center gap-4">
             {timeLimit > 0 && (
-              <div
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
-                  isTimeUp
-                    ? 'bg-red-500/20 border-red-500/30 text-red-400'
-                    : 'bg-primary-500/10 border-primary-500/20 text-primary-400'
-                }`}
-              >
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border ${
+                isTimeUp
+                  ? 'bg-red-500/20 border-red-500/30 text-red-400'
+                  : 'bg-primary-500/10 border-primary-500/20 text-primary-400'
+              }`}>
                 <Clock className="w-5 h-5" />
-                <span className="font-mono font-bold">
+                <span className="font-mono font-bold text-lg">
                   {formatTime(timeRemaining)}
                 </span>
               </div>
             )}
             {!timeLimit && isRunning && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-primary-500/10 border border-primary-500/20 rounded-lg text-primary-400">
+              <div className="flex items-center gap-2 px-4 py-2 bg-primary-500/10 border border-primary-500/20 rounded-xl text-primary-400">
                 <Clock className="w-5 h-5" />
-                <span className="font-mono font-bold">{formatTime(timeElapsed)}</span>
+                <span className="font-mono font-bold text-lg">{formatTime(timeElapsed)}</span>
               </div>
             )}
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid lg:grid-cols-2 gap-8">
           {/* Left: Challenge Info */}
           <div className="space-y-6">
             {/* Challenge Header */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              className={`bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm rounded-3xl p-8 ring-2 ${difficultyColors[currentChallenge.difficulty].ring}`}
             >
-              <Card gradient className="border-2 border-primary-500/20">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Trophy className="w-8 h-8" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span
-                        className={`text-xs px-2 py-1 rounded border ${
-                          difficultyColors[currentChallenge.difficulty]
-                        }`}
-                      >
-                        {currentChallenge.difficulty === 'easy'
-                          ? 'Facile'
-                          : currentChallenge.difficulty === 'medium'
-                          ? 'Moyen'
-                          : 'Difficile'}
-                      </span>
-                      <span className="text-xs px-2 py-1 bg-primary-500/20 text-primary-400 rounded">
-                        {currentChallenge.language.toUpperCase()}
-                      </span>
-                    </div>
-                    <h1 className="text-2xl font-black mb-2">
-                      {currentChallenge.title}
-                    </h1>
-                    <p className="text-gray-400">{currentChallenge.description}</p>
-                  </div>
+              <div className="flex items-start gap-6 mb-6">
+                <div className="w-20 h-20 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <Trophy className="w-10 h-10" />
                 </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <span className={`text-xs px-3 py-1 rounded-lg ${difficultyColors[currentChallenge.difficulty].bg} ${difficultyColors[currentChallenge.difficulty].text} font-medium`}>
+                      {difficultyLabels[currentChallenge.difficulty]}
+                    </span>
+                    <span className="text-xs px-3 py-1 bg-primary-500/20 text-primary-400 rounded-lg font-medium">
+                      {currentChallenge.language.toUpperCase()}
+                    </span>
+                  </div>
+                  <h1 className="text-3xl font-black mb-3">{currentChallenge.title}</h1>
+                  <p className="text-gray-300">{currentChallenge.description}</p>
+                </div>
+              </div>
 
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-dark-700">
-                  <div className="flex items-center gap-2">
+              <div className="grid grid-cols-2 gap-6 pt-6 border-t border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-yellow-500/10 rounded-xl">
                     <Zap className="w-5 h-5 text-yellow-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Récompense</p>
+                    <p className="font-bold text-lg">{currentChallenge.xpReward} XP</p>
+                  </div>
+                </div>
+                {timeLimit > 0 && (
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-primary-500/10 rounded-xl">
+                      <Clock className="w-5 h-5 text-primary-400" />
+                    </div>
                     <div>
-                      <p className="text-sm text-gray-400">Récompense</p>
-                      <p className="font-bold">{currentChallenge.xpReward} XP</p>
+                      <p className="text-sm text-gray-400">Limite</p>
+                      <p className="font-bold text-lg">{Math.floor(timeLimit / 60)} min</p>
                     </div>
                   </div>
-                  {timeLimit > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-primary-400" />
-                      <div>
-                        <p className="text-sm text-gray-400">Limite</p>
-                        <p className="font-bold">{Math.floor(timeLimit / 60)} min</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </Card>
+                )}
+              </div>
             </motion.div>
 
             {/* Instructions */}
@@ -305,31 +284,31 @@ const ChallengeDetail = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
+              className="bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm rounded-2xl p-8"
             >
-              <Card glass>
-                <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-                  <Target className="w-5 h-5 text-primary-400" />
-                  Instructions
-                </h3>
-                <div className="prose prose-invert max-w-none text-gray-400">
-                  <p>{currentChallenge.description}</p>
-                  <h4 className="text-white mt-4 mb-2">Exemples :</h4>
-                  <ul className="space-y-2">
-                    {currentChallenge.testCases &&
-                      typeof currentChallenge.testCases === 'object' &&
-                      'inputs' in currentChallenge.testCases && (
-                        <>
-                          {(currentChallenge.testCases as any).inputs.slice(0, 3).map((input: any, idx: number) => (
-                            <li key={idx} className="font-mono text-sm">
-                              Input: {JSON.stringify(input)} → Output:{' '}
-                              {JSON.stringify((currentChallenge.testCases as any).outputs[idx])}
-                            </li>
-                          ))}
-                        </>
-                      )}
-                  </ul>
-                </div>
-              </Card>
+              <div className="flex items-center gap-3 mb-6">
+                <Target className="w-6 h-6 text-primary-400" />
+                <h3 className="font-bold text-xl">Instructions</h3>
+              </div>
+              <div className="prose prose-invert max-w-none">
+                <p className="text-gray-300 mb-6">{currentChallenge.description}</p>
+                <h4 className="text-white font-bold mb-4">Exemples :</h4>
+                <ul className="space-y-3">
+                  {currentChallenge.testCases &&
+                    typeof currentChallenge.testCases === 'object' &&
+                    'inputs' in currentChallenge.testCases && (
+                      <>
+                        {(currentChallenge.testCases as any).inputs.slice(0, 3).map((input: any, idx: number) => (
+                          <li key={idx} className="font-mono text-sm bg-dark-800/50 p-3 rounded-lg">
+                            <span className="text-gray-400">Input:</span> <span className="text-primary-400">{JSON.stringify(input)}</span>
+                            {' → '}
+                            <span className="text-gray-400">Output:</span> <span className="text-green-400">{JSON.stringify((currentChallenge.testCases as any).outputs[idx])}</span>
+                          </li>
+                        ))}
+                      </>
+                    )}
+                </ul>
+              </div>
             </motion.div>
           </div>
 
@@ -353,42 +332,44 @@ const ChallengeDetail = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
+              className="bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm rounded-2xl p-6"
             >
-              <Card glass>
-                <div className="space-y-3">
-                  {!isRunning ? (
+              <div className="space-y-3">
+                {!isRunning ? (
+                  <Button
+                    onClick={handleStart}
+                    className="w-full"
+                    size="lg"
+                    icon={<Play className="w-5 h-5" />}
+                  >
+                    <Flame className="w-5 h-5 mr-2" />
+                    Commencer le défi
+                  </Button>
+                ) : (
+                  <>
                     <Button
-                      onClick={handleStart}
+                      onClick={handleSubmit}
+                      disabled={isTimeUp}
                       className="w-full"
-                      icon={<Play className="w-5 h-5" />}
+                      size="lg"
+                      variant={isTimeUp ? 'danger' : 'primary'}
+                      icon={<Trophy className="w-5 h-5" />}
                     >
-                      Commencer le défi
+                      {isTimeUp ? 'Temps écoulé' : 'Soumettre la solution'}
                     </Button>
-                  ) : (
-                    <>
-                      <Button
-                        onClick={handleSubmit}
-                        disabled={isTimeUp}
-                        className="w-full"
-                        variant={isTimeUp ? 'danger' : 'primary'}
-                        icon={<Trophy className="w-5 h-5" />}
-                      >
-                        {isTimeUp ? 'Temps écoulé' : 'Soumettre la solution'}
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setIsRunning(false);
-                          setTimeElapsed(0);
-                        }}
-                        variant="ghost"
-                        className="w-full"
-                      >
-                        Abandonner
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </Card>
+                    <Button
+                      onClick={() => {
+                        setIsRunning(false);
+                        setTimeElapsed(0);
+                      }}
+                      variant="ghost"
+                      className="w-full"
+                    >
+                      Abandonner
+                    </Button>
+                  </>
+                )}
+              </div>
             </motion.div>
           </div>
         </div>

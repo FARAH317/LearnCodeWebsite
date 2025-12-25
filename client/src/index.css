@@ -6,9 +6,7 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-     @apply border border-gray-700;
-  }
+  /* SUPPRIMÉ: @apply border border-gray-700; qui ajoutait des bordures partout */
   
   body {
     @apply bg-dark-900 text-white font-sans antialiased;
