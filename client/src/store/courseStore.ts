@@ -96,13 +96,19 @@ export const useCourseStore = create<CourseState>((set, get) => ({
   },
 
   saveProgress: async (lessonId: string, code: string, completed: boolean) => {
-    try {
-      await courseService.saveProgress(lessonId, code, completed);
-      await get().fetchProgress();
-    } catch (error: any) {
-      set({ error: error.message });
-    }
-  },
+  try {
+    const result = await courseService.saveProgress(lessonId, code, completed);
+    
+    // Mettre à jour la progression locale
+    await get().fetchProgress();
+    
+    // Retourner le résultat avec les infos utilisateur
+    return result;
+  } catch (error: any) {
+    set({ error: error.message });
+    throw error;
+  }
+},
 
   fetchProgress: async () => {
     try {

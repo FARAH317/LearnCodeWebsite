@@ -40,15 +40,18 @@ export const courseService = {
   },
 
   // Sauvegarder la progression
-  async saveProgress(lessonId: string, code: string, completed: boolean): Promise<Progress> {
-    const response = await api.post<ApiResponse<Progress>>('/progress', {
-      lessonId,
-      code,
-      completed,
-    });
-    if (!response.data.data) throw new Error('Failed to save progress');
-    return response.data.data;
-  },
+  // Sauvegarder la progression
+async saveProgress(lessonId: string, code: string, completed: boolean): Promise<any> {
+  const response = await api.post<ApiResponse<any>>('/progress', {
+    lessonId,
+    code,
+    completed,
+  });
+  
+  if (!response.data.data) throw new Error('Failed to save progress');
+  
+  return response.data.data;
+},
 
   // Récupérer la progression d'un utilisateur
   async getUserProgress(): Promise<Progress[]> {

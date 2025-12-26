@@ -10,20 +10,36 @@ interface AuthState {
 
   // Actions
   setUser: (user: User | null) => void;
+  updateUserXP: (xp: number, level: number) => void;
   login: (email: string, password: string) => Promise<void>;
   register: (data: { email: string; username: string; password: string; fullName: string }) => Promise<void>;
   logout: () => void;
   checkAuth: () => void;
+  refreshUser: () => Promise<void>;
   clearError: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: authService.getCurrentUser(),
   isAuthenticated: authService.isAuthenticated(),
   isLoading: false,
   error: null,
 
-  setUser: (user) => set({ user, isAuthenticated: !!user }),
+  setUser: (user) => {
+    set({ user, isAuthenticated: !!user });
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+  },
+
+  updateUserXP: (xp, level) => {
+    const currentUser = get().user;
+    if (currentUser) {
+      const updatedUser = { ...currentUser, xp, level };
+      set({ user: updatedUser });
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+  },
 
   login: async (email, password) => {
     set({ isLoading: true, error: null });
@@ -62,6 +78,16 @@ export const useAuthStore = create<AuthState>((set) => ({
     const user = authService.getCurrentUser();
     const isAuthenticated = authService.isAuthenticated();
     set({ user, isAuthenticated });
+  },
+
+  refreshUser: async () => {
+    try {
+      const user = await authService.getMe();
+      set({ user });
+      localStorage.setItem('user', JSON.stringify(user));
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+    }
   },
 
   clearError: () => set({ error: null }),
