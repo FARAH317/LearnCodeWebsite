@@ -42,7 +42,7 @@ export const courseService = {
   // Sauvegarder la progression
   // Sauvegarder la progression
 async saveProgress(lessonId: string, code: string, completed: boolean): Promise<any> {
-  const response = await api.post<ApiResponse<any>>('/progress', {
+  const response = await api.post<ApiResponse<any>>('/lessons/progress', {
     lessonId,
     code,
     completed,
@@ -53,9 +53,11 @@ async saveProgress(lessonId: string, code: string, completed: boolean): Promise<
   return response.data.data;
 },
 
-  // Récupérer la progression d'un utilisateur
-  async getUserProgress(): Promise<Progress[]> {
-    const response = await api.get<ApiResponse<Progress[]>>('/progress');
-    return response.data.data || [];
-  },
+// Récupérer la progression d'un utilisateur
+async getUserProgress(): Promise<Progress[]> {
+  const response = await api.get<ApiResponse<Progress[]>>('/lessons/progress');
+  return response.data.data || [];
+},
+
+  
 };

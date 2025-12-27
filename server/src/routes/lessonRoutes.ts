@@ -7,11 +7,11 @@ const router = express.Router();
 // Toutes les routes nécessitent l'authentification
 router.use(authMiddleware);
 
-// Routes pour la progression AVANT les routes avec :id
+// Routes pour la progression (MUST be before /:id route)
 router.post('/progress', lessonController.saveProgress.bind(lessonController));
 router.get('/progress', lessonController.getUserProgress.bind(lessonController));
 
-// Route pour une leçon spécifique
+// Route pour une leçon spécifique (this should come last)
 router.get('/:id', lessonController.getLessonById.bind(lessonController));
 
 export default router;
