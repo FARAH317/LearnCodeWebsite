@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Course, Lesson, Progress } from '@/types';
 import { courseService } from '@/services/courseService';
+import { useAuthStore } from './authStore';
 
 interface CourseState {
   courses: Course[];
@@ -19,7 +20,7 @@ interface CourseState {
   fetchLessons: (courseId: string) => Promise<void>;
   fetchLesson: (lessonId: string) => Promise<void>;
   enrollCourse: (courseId: string) => Promise<void>;
-  saveProgress: (lessonId: string, code: string, completed: boolean) => Promise<void>;
+  saveProgress: (lessonId: string, code: string, completed: boolean) => Promise<any>;
   fetchProgress: () => Promise<void>;
   clearError: () => void;
 }
@@ -97,15 +98,28 @@ export const useCourseStore = create<CourseState>((set, get) => ({
 
   saveProgress: async (lessonId: string, code: string, completed: boolean) => {
   try {
-    const result = await courseService.saveProgress(lessonId, code, completed);
-    
+    const data = await courseService.saveProgress(lessonId, code, completed);
+
     // Mettre à jour la progression locale
-    await get().fetchProgress();
-    
-    // Retourner le résultat avec les infos utilisateur
-    return result;
-  } catch (error: any) {
-    set({ error: error.message });
+    set((state) => ({
+      progress: state.progress.some(p => p.lessonId === lessonId)
+        ? state.progress.map(p =>
+            p.lessonId === lessonId
+              ? { ...p, code, completed, updatedAt: new Date().toISOString() }
+              : p
+          )
+        : state.progress
+    }));
+
+    // Si des XP ont été gagnés, mettre à jour l'utilisateur
+    if (data.xpGained > 0) {
+      const { updateUserXP } = useAuthStore.getState();
+      updateUserXP(data.xpGained, data.newLevel);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error saving progress:', error);
     throw error;
   }
 },

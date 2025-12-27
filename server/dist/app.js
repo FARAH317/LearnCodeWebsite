@@ -11,6 +11,8 @@ const errorHandler_1 = require("./middleware/errorHandler");
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const courseRoutes_1 = __importDefault(require("./routes/courseRoutes"));
 const lessonRoutes_1 = __importDefault(require("./routes/lessonRoutes"));
+const challengeRoutes_1 = __importDefault(require("./routes/challengeRoutes"));
+const roadmapRoutes_1 = __importDefault(require("./routes/roadmapRoutes"));
 const app = (0, express_1.default)();
 // Middlewares globaux
 app.use((0, cors_1.default)({
@@ -31,6 +33,9 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes_1.default);
 app.use('/api/courses', courseRoutes_1.default);
 app.use('/api/lessons', lessonRoutes_1.default);
+app.use('/api/challenges', challengeRoutes_1.default);
+app.use('/api/roadmaps', roadmapRoutes_1.default);
+app.use('/api/progress', lessonRoutes_1.default); // Progress routes are in lessonRoutes
 // Gestion des routes non trouvées
 app.use(errorHandler_1.notFoundHandler);
 // Gestion des erreurs

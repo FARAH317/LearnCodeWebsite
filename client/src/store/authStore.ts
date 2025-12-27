@@ -19,7 +19,7 @@ interface AuthState {
   clearError: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: authService.getCurrentUser(),
   isAuthenticated: authService.isAuthenticated(),
   isLoading: false,
@@ -32,14 +32,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  updateUserXP: (xp, level) => {
-    const currentUser = get().user;
-    if (currentUser) {
-      const updatedUser = { ...currentUser, xp, level };
-      set({ user: updatedUser });
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-    }
-  },
+  updateUserXP: (xpGained: number, newLevel?: number) => {
+  set((state) => ({
+    user: state.user
+      ? {
+          ...state.user,
+          xp: state.user.xp + xpGained,
+          level: newLevel || state.user.level,
+        }
+      : null,
+  }));
+},
 
   login: async (email, password) => {
     set({ isLoading: true, error: null });
@@ -68,6 +71,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       throw error;
     }
   },
+  
 
   logout: () => {
     authService.logout();

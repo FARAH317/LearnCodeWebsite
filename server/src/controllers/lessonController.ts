@@ -1,50 +1,28 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import prisma from '../config/database';
-import { AppError } from '../middleware/errorHandler';
+import xpService from '../services/xpService';
 
-export class LessonController {
-  // GET /api/lessons/:id
-  async getLessonById(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { id } = req.params;
-
-      const lesson = await prisma.lesson.findUnique({
-        where: { id },
-        include: {
-          course: true,
-          quizzes: true,
-        },
-      });
-
-      if (!lesson) {
-        throw new AppError('Lesson not found', 404);
-      }
-
-      res.status(200).json({
-        success: true,
-        data: lesson,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  // POST /api/progress
-  async saveProgress(req: Request, res: Response, next: NextFunction): Promise<void> {
+class LessonController {
+  // Sauvegarder la progression
+  async saveProgress(req: Request, res: Response) {
     try {
       const userId = req.user!.userId;
       const { lessonId, code, completed } = req.body;
 
-      // Vérifier que la leçon existe
+      // Vérifier si la leçon existe
       const lesson = await prisma.lesson.findUnique({
         where: { id: lessonId },
+        select: { id: true, xpReward: true },
       });
 
       if (!lesson) {
-        throw new AppError('Lesson not found', 404);
+        return res.status(404).json({
+          success: false,
+          message: 'Lesson not found',
+        });
       }
 
-      // Vérifier si la progression existe déjà
+      // Vérifier si une progression existe déjà
       const existingProgress = await prisma.progress.findUnique({
         where: {
           userId_lessonId: {
@@ -54,138 +32,114 @@ export class LessonController {
         },
       });
 
-      let progress;
-      let xpEarned = 0;
-      let levelUp = false;
-      let newLevel = 0;
+      // Déterminer si l'utilisateur vient de complèter la leçon pour la première fois
+      const isFirstCompletion = completed && (!existingProgress || !existingProgress.completed);
 
-      if (existingProgress) {
-        // Vérifier si c'est une nouvelle complétion
-        const isNewCompletion = completed && !existingProgress.completed;
+      let xpResult = null;
 
-        // Mettre à jour
-        progress = await prisma.progress.update({
-          where: { id: existingProgress.id },
-          data: {
-            code,
-            completed,
-            ...(completed && !existingProgress.completedAt && { completedAt: new Date() }),
-          },
-        });
-
-        // Ajouter XP uniquement si c'est une nouvelle complétion
-        if (isNewCompletion) {
-          const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: { xp: true, level: true },
-          });
-
-          if (user) {
-            const oldLevel = user.level;
-            const newXp = user.xp + lesson.xpReward;
-            newLevel = Math.floor(newXp / 1000) + 1;
-            levelUp = newLevel > oldLevel;
-
-            await prisma.user.update({
-              where: { id: userId },
-              data: {
-                xp: newXp,
-                level: newLevel,
-              },
-            });
-
-            xpEarned = lesson.xpReward;
-          }
-        }
-      } else {
-        // Créer nouvelle progression
-        progress = await prisma.progress.create({
-          data: {
-            userId,
-            lessonId,
-            code,
-            completed,
-            ...(completed && { completedAt: new Date() }),
-          },
-        });
-
-        // Ajouter XP si complété
-        if (completed) {
-          const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: { xp: true, level: true },
-          });
-
-          if (user) {
-            const oldLevel = user.level;
-            const newXp = user.xp + lesson.xpReward;
-            newLevel = Math.floor(newXp / 1000) + 1;
-            levelUp = newLevel > oldLevel;
-
-            await prisma.user.update({
-              where: { id: userId },
-              data: {
-                xp: newXp,
-                level: newLevel,
-              },
-            });
-
-            xpEarned = lesson.xpReward;
-          }
-        }
+      // Si c'est la première complétion, ajouter les XP
+      if (isFirstCompletion) {
+        xpResult = await xpService.addXP(userId, lesson.xpReward);
       }
 
-      // Récupérer l'utilisateur mis à jour
-      const updatedUser = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true,
-          username: true,
-          fullName: true,
-          xp: true,
-          level: true,
+      // Créer ou mettre à jour la progression
+      const progress = await prisma.progress.upsert({
+        where: {
+          userId_lessonId: {
+            userId,
+            lessonId,
+          },
+        },
+        update: {
+          code,
+          completed,
+          updatedAt: new Date(),
+        },
+        create: {
+          userId,
+          lessonId,
+          code,
+          completed,
         },
       });
 
-      res.status(200).json({
+      return res.json({
         success: true,
-        message: completed ? 'Lesson completed!' : 'Progress saved',
         data: {
           progress,
-          xpEarned,
-          levelUp,
-          newLevel: levelUp ? newLevel : undefined,
-          user: updatedUser,
+          xpGained: isFirstCompletion ? lesson.xpReward : 0,
+          leveledUp: xpResult?.leveledUp || false,
+          newLevel: xpResult?.newLevel,
+          totalXP: xpResult?.user.xp,
         },
       });
-    } catch (error) {
-      next(error);
+    } catch (error: any) {
+      console.error('Error saving progress:', error);
+      return res.status(500).json({
+        success: false,
+        message: error.message || 'Error saving progress',
+      });
     }
   }
 
-  // GET /api/progress
-  async getUserProgress(req: Request, res: Response, next: NextFunction): Promise<void> {
+  // Récupérer la progression de l'utilisateur
+  async getUserProgress(req: Request, res: Response) {
     try {
       const userId = req.user!.userId;
 
       const progress = await prisma.progress.findMany({
         where: { userId },
-        include: {
-          lesson: {
-            include: {
-              course: true,
-            },
-          },
-        },
         orderBy: { updatedAt: 'desc' },
       });
 
-      res.status(200).json({
+      return res.json({
         success: true,
         data: progress,
       });
-    } catch (error) {
-      next(error);
+    } catch (error: any) {
+      console.error('Error fetching progress:', error);
+      return res.status(500).json({
+        success: false,
+        message: error.message || 'Error fetching progress',
+      });
+    }
+  }
+
+  // Récupérer une leçon par ID
+  async getLessonById(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      const lesson = await prisma.lesson.findUnique({
+        where: { id },
+        include: {
+          course: {
+            select: {
+              id: true,
+              title: true,
+              language: true,
+            },
+          },
+        },
+      });
+
+      if (!lesson) {
+        return res.status(404).json({
+          success: false,
+          message: 'Lesson not found',
+        });
+      }
+
+      return res.json({
+        success: true,
+        data: lesson,
+      });
+    } catch (error: any) {
+      console.error('Error fetching lesson:', error);
+      return res.status(500).json({
+        success: false,
+        message: error.message || 'Error fetching lesson',
+      });
     }
   }
 }

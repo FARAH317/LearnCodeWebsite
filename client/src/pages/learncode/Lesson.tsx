@@ -55,15 +55,22 @@ const Lesson = () => {
   const hasPrevLesson = currentLessonIndex > 0;
 
   const handleSaveProgress = async (completed: boolean = false) => {
-    if (currentLesson) {
-      await saveProgress(currentLesson.id, code, completed);
+  if (currentLesson) {
+    try {
+      const result = await saveProgress(currentLesson.id, code, completed);
+      
       if (completed && !isCompleted) {
         setIsCompleted(true);
         setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 3000);
+        
+        // Afficher plus longtemps si level up
+        setTimeout(() => setShowSuccess(false), result.leveledUp ? 5000 : 3000);
       }
+    } catch (error) {
+      console.error('Failed to save progress:', error);
     }
-  };
+  }
+};
 
   const handleValidate = () => {
     handleSaveProgress(true);

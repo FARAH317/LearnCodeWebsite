@@ -8,6 +8,13 @@ interface LoginData {
     email: string;
     password: string;
 }
+interface UpdateProfileData {
+    email?: string;
+    username?: string;
+    fullName?: string;
+    bio?: string;
+    avatar?: string;
+}
 export declare class AuthService {
     register(data: RegisterData): Promise<{
         user: {
@@ -16,6 +23,7 @@ export declare class AuthService {
             fullName: string;
             id: string;
             avatar: string | null;
+            bio: string | null;
             xp: number;
             level: number;
             createdAt: Date;
@@ -54,7 +62,7 @@ export declare class AuthService {
             achievements: number;
         };
     }>;
-    updateProfile(userId: string, data: Partial<RegisterData>): Promise<{
+    updateProfile(userId: string, data: UpdateProfileData): Promise<{
         email: string;
         username: string;
         fullName: string;
@@ -63,6 +71,8 @@ export declare class AuthService {
         bio: string | null;
         xp: number;
         level: number;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
 }
 export {};

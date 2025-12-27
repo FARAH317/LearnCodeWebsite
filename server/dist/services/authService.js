@@ -42,6 +42,7 @@ class AuthService {
                 username: true,
                 fullName: true,
                 avatar: true,
+                bio: true,
                 xp: true,
                 level: true,
                 createdAt: true,
@@ -72,6 +73,16 @@ class AuthService {
         const isPasswordValid = await (0, encryption_1.comparePassword)(password, user.password);
         if (!isPasswordValid) {
             throw new errorHandler_1.AppError('Invalid email or password', 401);
+        }
+        // Calculer le niveau basé sur les XP
+        const calculatedLevel = Math.floor(user.xp / 1000) + 1;
+        // Mettre à jour le niveau si différent
+        if (calculatedLevel !== user.level) {
+            await database_1.default.user.update({
+                where: { id: user.id },
+                data: { level: calculatedLevel },
+            });
+            user.level = calculatedLevel;
         }
         // Générer le token JWT
         const token = (0, jwt_1.generateToken)({
@@ -113,11 +124,21 @@ class AuthService {
         if (!user) {
             throw new errorHandler_1.AppError('User not found', 404);
         }
+        // Calculer le niveau basé sur les XP
+        const calculatedLevel = Math.floor(user.xp / 1000) + 1;
+        // Mettre à jour le niveau si différent
+        if (calculatedLevel !== user.level) {
+            await database_1.default.user.update({
+                where: { id: userId },
+                data: { level: calculatedLevel },
+            });
+            user.level = calculatedLevel;
+        }
         return user;
     }
     // Mettre à jour le profil
     async updateProfile(userId, data) {
-        const { fullName, username } = data;
+        const { fullName, username, bio, avatar } = data;
         // Si le username est modifié, vérifier qu'il n'est pas déjà pris
         if (username) {
             const existingUser = await database_1.default.user.findUnique({
@@ -127,12 +148,19 @@ class AuthService {
                 throw new errorHandler_1.AppError('Username already taken', 409);
             }
         }
+        // Construire l'objet de mise à jour
+        const updateData = {};
+        if (fullName !== undefined)
+            updateData.fullName = fullName;
+        if (username !== undefined)
+            updateData.username = username;
+        if (bio !== undefined)
+            updateData.bio = bio;
+        if (avatar !== undefined)
+            updateData.avatar = avatar;
         const user = await database_1.default.user.update({
             where: { id: userId },
-            data: {
-                ...(fullName && { fullName }),
-                ...(username && { username }),
-            },
+            data: updateData,
             select: {
                 id: true,
                 email: true,
@@ -142,6 +170,8 @@ class AuthService {
                 bio: true,
                 xp: true,
                 level: true,
+                createdAt: true,
+                updatedAt: true,
             },
         });
         return user;
